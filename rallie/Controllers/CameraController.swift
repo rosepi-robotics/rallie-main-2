@@ -60,9 +60,12 @@ class CameraController: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         session.inputs.forEach { session.removeInput($0) }
         session.outputs.forEach { session.removeOutput($0) }
 
+        // Always start with fresh calibration
         initializeCalibrationPoints(for: screenSize)
-        
         isCalibrationMode = true
+        
+        // Clear any previous Kalman filter
+        playerPositionFilter = nil
         
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
             print("❌ Failed to get camera device")
@@ -217,6 +220,10 @@ class CameraController: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         deleteCSVFile()
         
         // Update court lines using the new homography
+        updateCourtLines(with: matrix)
+    }
+
+    func updateCourtLines(with matrix: [NSNumber]) {
         let courtLines: [LineSegment] = [
             // Baseline (y = courtLength)
             LineSegment(start: CGPoint(x: 0, y: CourtLayout.courtLength), 
@@ -278,9 +285,15 @@ class CameraController: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         }
         
         DispatchQueue.main.async { [weak self] in
-            guard let self = self,
-                  let matrix = self.homographyMatrix else {
-                print("❌ Missing homography matrix")
+            guard let self = self else { return }
+            
+            // Skip player position processing if homography matrix is missing or in calibration mode
+            if self.isCalibrationMode || self.homographyMatrix == nil {
+                return
+            }
+            
+            guard let matrix = self.homographyMatrix else {
+                // This should never happen due to the check above, but just to be safe
                 return
             }
             
@@ -310,10 +323,11 @@ class CameraController: NSObject, ObservableObject, AVCaptureVideoDataOutputSamp
         // Process the tap location
         print("👆 User tapped at: \(point)")
         
-        // If we have a homography matrix, project the tap to court coordinates
-        if let matrix = homographyMatrix {
+        // If we have a homography matrix and enough calibration points, project the tap to court coordinates
+        if let matrix = homographyMatrix, calibrationPoints.count >= 4 {
             if let projected = HomographyHelper.projectsForMap(point: point, using: matrix, trapezoidCorners: Array(calibrationPoints.prefix(4))) {
                 print("📍 Projected tap to court coordinates: \(projected)")
+                lastProjectedTap = projected
             }
         }
     }

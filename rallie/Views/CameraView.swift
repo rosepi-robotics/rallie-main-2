@@ -90,12 +90,6 @@ struct CameraView: View {
             }
 
             VStack {
-                Text(cameraController.isCalibrationMode ?
-                     "Tap the 5 key points on the court to calibrate" :
-                     "Align the court to fit the red outline. Tap anywhere to start tracking.")
-                    .foregroundColor(.white)
-                    .padding(.top, 40)
-
                 HStack {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 10) {

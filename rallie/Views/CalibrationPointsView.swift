@@ -42,30 +42,36 @@ struct CalibrationPointsView: View {
                 
                 // Draw calibration guidance UI
                 VStack(spacing: 20) {
-                    // Step indicator
-                    Text("Step \(min(cameraController.calibrationStep + 1, 5)) of 5")
-                        .font(.headline)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.black.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(20)
-                        .padding(.top, 20)
-                    
-                    // Instruction text
-                    Text(cameraController.calibrationInstructions)
-                        .font(.title3)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    
-                    // Visual indicator of where to tap
-                    getTargetIndicator(for: cameraController.calibrationStep)
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.white)
-                        .opacity(0.8)
+                    // Center the calibration UI elements but position them higher
+                    VStack(spacing: 15) {
+                        // Step indicator
+                        Text("Step \(min(cameraController.calibrationStep + 1, 5)) of 5")
+                            .font(.subheadline)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.black.opacity(0.7))
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                            .padding(.top, 40)
+                        
+                        // Instruction text
+                        Text(cameraController.calibrationInstructions)
+                            .font(.callout)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.black.opacity(0.7))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .frame(maxWidth: 300)
+                        
+                        // Visual indicator of where to tap
+                        getTargetIndicator(for: cameraController.calibrationStep)
+                            .frame(width: 30, height: 30)
+                            .foregroundColor(.white)
+                            .opacity(0.8)
+                    }
+                    .frame(maxWidth: .infinity)
                     
                     Spacer()
                     
